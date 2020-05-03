@@ -1,0 +1,126 @@
+{
+	"timeframe": {
+		"durationString": "PT1H"
+	},
+	"searches": [{
+		"query": "tag=syslog-palo* syslog Hostname| lower Hostname | stats max(TIMESTAMP) as LastEvent count by Hostname TAG as EventCount | table Hostname TAG EventCount LastEvent",
+		"alias": "Palo Devices Reporting",
+		"searchID": 8388022266
+	},
+	{
+		"query": "tag=syslog-palo* ax device_name | lower device_name | stats max(TIMESTAMP) as LastEvent count by device_name TAG | lookup -r pdassets2 device_name hostname (ip4ddress group zonebus papp description) | sort by group | sort by TAG | table device_name ip4ddress group zonebus papp description TAG count LastEvent",
+		"alias": "Palo Assets Reporting",
+		"searchID": 5325875051
+	},
+	{
+		"query": "tag=syslog-palo* ax device_name | lower device_name | unique device_name | lookup -r pdassets2 device_name hostname group | stats count(device_name) by group | chart count by group",
+		"alias": "Palo Devices Reporting by Group",
+		"searchID": 3723713297
+	},
+	{
+		"query": "tag=syslog-palo* stats count by TAG | chart count by TAG",
+		"alias": "Palo Event Types",
+		"searchID": 4252490190
+	},
+	{
+		"query": "tag=syslog-palo* ax device_name | lower device_name | unique device_name | lookup -r pdassets2 device_name hostname scope | stats count(device_name) by scope | chart count by scope",
+		"alias": "Palo Events by Scope",
+		"searchID": 8016314172
+	}],
+	"tiles": [{
+		"title": "Palo Devices Reporting",
+		"renderer": "table",
+		"searchesIndex": 0,
+		"span": {
+			"col": 6,
+			"row": 5,
+			"x": 13,
+			"y": 0
+		},
+		"rendererOptions": {
+			
+		},
+		"id": 1588422583081
+	},
+	{
+		"title": "Palo Assets Reporting",
+		"renderer": "table",
+		"searchesIndex": 1,
+		"span": {
+			"col": 19,
+			"row": 8,
+			"x": 0,
+			"y": 5
+		},
+		"rendererOptions": {
+			
+		},
+		"id": 1588430857928
+	},
+	{
+		"title": "Palo Devices Reporting by Group",
+		"renderer": "pieChart",
+		"searchesIndex": 2,
+		"span": {
+			"col": 3,
+			"row": 5,
+			"x": 0,
+			"y": 0
+		},
+		"rendererOptions": {
+			"renderer": "pieChart",
+			"IncludeOther": "yes"
+		},
+		"id": 1588430861549
+	},
+	{
+		"title": "Palo Event Types",
+		"renderer": "lineChart",
+		"searchesIndex": 3,
+		"span": {
+			"col": 7,
+			"row": 5,
+			"x": 6,
+			"y": 0
+		},
+		"rendererOptions": {
+			"values": {
+				"Stack": "grouped",
+				"Smoothing": "normal",
+				"XAxisSplitLine": "no",
+				"YAxisSplitLine": "no",
+				"ConnectNulls": "yes",
+				"LogScale": "no"
+			},
+			"renderer": "lineChart",
+			"Stack": "grouped",
+			"Smoothing": "normal",
+			"XAxisSplitLine": "no",
+			"YAxisSplitLine": "no",
+			"IncludeOther": "yes",
+			"ConnectNulls": "no",
+			"LogScale": "no"
+		},
+		"id": 1588431592370
+	},
+	{
+		"title": "Palo Devices Reporting by Scope",
+		"renderer": "pieChart",
+		"searchesIndex": 4,
+		"span": {
+			"col": 3,
+			"row": 5,
+			"x": 3,
+			"y": 0
+		},
+		"rendererOptions": {
+			"renderer": "pieChart",
+			"IncludeOther": "yes"
+		},
+		"id": 1588441975457
+	}],
+	"version": 2,
+	"liveUpdateInterval": 10,
+	"linkZooming": true,
+	"lastDataUpdate": "2020-05-03T07:52:41-04:00"
+}
