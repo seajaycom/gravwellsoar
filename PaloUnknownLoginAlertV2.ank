@@ -1,0 +1,33 @@
+var time = import("time")
+# SET THESE VARIABLES
+var serverPath = "http://10.0.0.1"
+var from = "admin@sarctest.southernco.com"
+var to = [ "x2mapate@southernco.com" ]
+var sub = "Gravwell SOAR"
+var my_name = "SARC_Gravwell_Admin"
+var report_name = "Unknown User Login"
+duration = 5 * time.Minute
+min_alert_interval = 24*time.Hour #don't alert more than once a day
+alert_throttle_field = "ip"
+alert_tag="alerts"
+alert_category = "PaloAlto Logins"
+
+
+query = `tag=syslog csv [3]==USERID [4]==login [7] as system [8] as ip [9]==unknown as username [10] as collector |
+stats count as Attempts min(TIMESTAMP) as First max(TIMESTAMP) as Last by ip |
+lookup -r hosts ip ip owner as Owner ip ip businessUnit as BusinessUnit |
+table ip Attempts First Last username collector Owner BusinessUnit`
+
+require("alerts/email.ank")
+
+alert = emailAlert
+#alert.EnableBatch() #send a single email vs one for each alert
+alert.SetServerPath(serverPath)
+alert.SetQueryParams(query, START.Add(-1*duration), START)
+alert.SetEmailParams(from, to, sub)
+alert.SetTitle(report_name)
+alert.ThrottleOn(alert_throttle_field, min_alert_interval)
+alert.ReingestAlerts(alert_tag, alert_category, report_name)
+err = alert.Run()
+println("Finished run", err)
+return err
