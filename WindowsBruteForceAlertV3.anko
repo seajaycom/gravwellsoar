@@ -1,0 +1,34 @@
+var time = import("time")
+# SET THESE VARIABLES
+var serverPath = "http://10.0.0.1"
+var from = "admin@sarctest.southernco.com"
+var to = [ "x2mapate@southernco.com" ]
+var sub = "Gravwell SOAR"
+var my_name = "SARC_Gravwell_Admin"
+var report_name = "Windows Login Bruteforce Alert"
+duration = 5 * time.Minute
+min_alert_interval = 24*time.Hour #don't alert more than once a day
+alert_throttle_field = "WorkstationName"
+alert_tag="alerts"
+alert_category = "Windows Brute Force Login Attempts"
+
+query = `tag=windows winlog EventID==4625 Provider=="Microsoft-Windows-Security-Auditing"
+TargetUserName WorkstationName LogonType |
+stats count as Attempts min(TIMESTAMP) as FirstEvent max(TIMESTAMP) as LastEvent by WorkstationName over 5m |
+eval Attempts > 3 |
+lookup -r hosts SRC ip owner as Owner SRC ip businessUnit as BusinessUnit |
+table -nt TargetUserName WorkstationName LogonType Attempts FirstEvent LastEvent SRC Owner BusinessUnit`
+
+require("alerts/email.ank")
+
+alert = emailAlert
+#alert.EnableBatch() #send a single email vs one for each alert
+alert.SetServerPath(serverPath)
+alert.SetQueryParams(query, START.Add(-1*duration), START)
+alert.SetEmailParams(from, to, sub)
+alert.SetTitle(report_name)
+alert.ThrottleOn(alert_throttle_field, min_alert_interval)
+alert.ReingestAlerts(alert_tag, alert_category, report_name)
+err = alert.Run()
+println("Finished run", err)
+return err
